@@ -86,7 +86,65 @@ describe('when there are initially some blogs saved', () => {
       }
     })
   })
+  describe('addition of a new blog', () => {
+    test('succeeds with valid data', async () => {
+      const newBlog = {
+        title: 'A Brand New Blog Post',
+        author: 'Test Author',
+        url: 'http://example.com/newblog',
+        likes: 15
+      }
   
+      await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201) // Expect '201 Created'
+        .expect('Content-Type', /application\/json/)
+  
+      // Verify the database state
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+  
+      const titles = blogsAtEnd.map(b => b.title)
+      assert(titles.includes('A Brand New Blog Post'), 'The new blog title should be in the database')
+    })
+  
+    test('fails with status code 400 if title is missing', async () => {
+      // This test will be more relevant for exercise 4.12,
+      // but it's good to think about validation early.
+      // For now, we'll assume our controller might do basic validation or rely on Mongoose.
+      const newBlogWithoutTitle = {
+        author: 'Anonymous',
+        url: 'http://example.com/notitle',
+        likes: 5
+      }
+  
+      await api
+        .post('/api/blogs')
+        .send(newBlogWithoutTitle)
+        .expect(400) // Expect '400 Bad Request'
+  
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length, 'Blog count should not increase if title is missing')
+    })
+  
+    test('fails with status code 400 if url is missing', async () => {
+      // Similar to the title test, primarily for 4.12.
+      const newBlogWithoutUrl = {
+        title: 'A Blog With No URL',
+        author: 'Anonymous',
+        likes: 5
+      }
+  
+      await api
+        .post('/api/blogs')
+        .send(newBlogWithoutUrl)
+        .expect(400)
+  
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length, 'Blog count should not increase if URL is missing')
+    })
+  })
   // ... (rest of the file, including the 'after' block)
 // Close the database connection after all tests have run
 after(async () => {

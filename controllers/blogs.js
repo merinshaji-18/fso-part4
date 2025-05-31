@@ -7,7 +7,7 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
 
-blogsRouter.post('/', (request, response, next) => {
+blogsRouter.post('/', async (request, response) => {
   const body = request.body
 
   // Basic validation: check if title or url is missing
@@ -21,14 +21,11 @@ blogsRouter.post('/', (request, response, next) => {
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes === undefined ? 0 : body.likes // Ensure likes defaults to 0 if not provided
+    likes: body.likes // Ensure likes defaults to 0 if not provided
   })
 
-  blog.save()
-    .then(savedBlog => {
-      response.status(201).json(savedBlog)
-    })
-    .catch(error => next(error)) // Pass errors to the error handler middleware
+  const savedBlog = await blog.save()
+  response.status(201).json(savedBlog) // Ensure status 201
 })
 
 module.exports = blogsRouter
