@@ -1,12 +1,96 @@
 // tests/list_helper.test.js
-const { test, describe } = require('node:test') // Import test and describe
-const assert = require('node:assert')           // Import assert for making assertions
-const listHelper = require('../utils/list_helper') // Import the module we want to test
+const { test, describe } = require('node:test')
+const assert = require('node:assert')
+const listHelper = require('../utils/list_helper')
 
-// Test case for the dummy function
 test('dummy returns one', () => {
-  const blogs = [] // Create an empty array as an argument for dummy, though it's not used by dummy
+  const blogs = []
+  const result = listHelper.dummy(blogs)
+  assert.strictEqual(result, 1)
+})
 
-  const result = listHelper.dummy(blogs) // Call the dummy function
-  assert.strictEqual(result, 1)        // Assert that the result is strictly equal to 1
+// New describe block for totalLikes
+describe('total likes', () => {
+  // Test case 1: List with a single blog
+  const listWithOneBlog = [
+    {
+      _id: '5a422aa71b54a676234d17f8',
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      likes: 5,
+      __v: 0
+    }
+  ]
+
+  test('when list has only one blog, equals the likes of that', () => {
+    const result = listHelper.totalLikes(listWithOneBlog)
+    assert.strictEqual(result, 5)
+  })
+
+  // Test case 2: Empty list
+  test('of empty list is zero', () => {
+    const blogs = []
+    const result = listHelper.totalLikes(blogs)
+    assert.strictEqual(result, 0)
+  })
+
+  // Test case 3: A bigger list of blogs
+  // You can use the list provided in the exercise material, or create your own.
+  const blogs = [
+    {
+      _id: "5a422a851b54a676234d17f7",
+      title: "React patterns",
+      author: "Michael Chan",
+      url: "https://reactpatterns.com/",
+      likes: 7,
+      __v: 0
+    },
+    {
+      _id: "5a422aa71b54a676234d17f8",
+      title: "Go To Statement Considered Harmful",
+      author: "Edsger W. Dijkstra",
+      url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
+      likes: 5,
+      __v: 0
+    },
+    {
+      _id: "5a422b3a1b54a676234d17f9",
+      title: "Canonical string reduction",
+      author: "Edsger W. Dijkstra",
+      url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+      likes: 12,
+      __v: 0
+    },
+    {
+      _id: "5a422b891b54a676234d17fa",
+      title: "First class tests",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll",
+      likes: 10,
+      __v: 0
+    },
+    {
+      _id: "5a422ba71b54a676234d17fb",
+      title: "TDD harms architecture",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html",
+      likes: 0,
+      __v: 0
+    },
+    {
+      _id: "5a422bc61b54a676234d17fc",
+      title: "Type wars",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+      likes: 2,
+      __v: 0
+    }
+  ]
+
+  test('of a bigger list is calculated right', () => {
+    const result = listHelper.totalLikes(blogs)
+    // Sum of likes: 7 + 5 + 12 + 10 + 0 + 2 = 36
+    assert.strictEqual(result, 36)
+  })
 })
