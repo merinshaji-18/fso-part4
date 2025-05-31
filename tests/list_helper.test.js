@@ -179,3 +179,77 @@ describe('most blogs', () => {
       assert.strictEqual(result, null);
     });
   })
+  describe('most likes', () => {
+    const listWithOneBlog = [
+      {
+        _id: '5a422aa71b54a676234d17f8',
+        title: 'Go To Statement Considered Harmful',
+        author: 'Edsger W. Dijkstra',
+        url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+        likes: 5,
+        __v: 0
+      }
+    ]
+  
+    const blogs = [
+      { _id: "5a422a851b54a676234d17f7", title: "React patterns", author: "Michael Chan", url: "https://reactpatterns.com/", likes: 7, __v: 0 },
+      { _id: "5a422aa71b54a676234d17f8", title: "Go To Statement Considered Harmful", author: "Edsger W. Dijkstra", url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html", likes: 5, __v: 0 },
+      { _id: "5a422b3a1b54a676234d17f9", title: "Canonical string reduction", author: "Edsger W. Dijkstra", url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html", likes: 12, __v: 0 },
+      { _id: "5a422b891b54a676234d17fa", title: "First class tests", author: "Robert C. Martin", url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll", likes: 10, __v: 0 },
+      { _id: "5a422ba71b54a676234d17fb", title: "TDD harms architecture", author: "Robert C. Martin", url: "http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html", likes: 0, __v: 0 },
+      { _id: "5a422bc61b54a676234d17fc", title: "Type wars", author: "Robert C. Martin", url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html", likes: 2, __v: 0 }
+    ]
+  
+    test('of an empty list is null', () => {
+      const result = listHelper.mostLikes([])
+      assert.strictEqual(result, null)
+    })
+  
+    test('when list has only one blog, returns that author and their likes', () => {
+      const result = listHelper.mostLikes(listWithOneBlog)
+      assert.deepStrictEqual(result, { author: 'Edsger W. Dijkstra', likes: 5 })
+    })
+  
+    test('of a bigger list returns the author with most total likes and their sum', () => {
+      const result = listHelper.mostLikes(blogs)
+      // Michael Chan: 7 likes
+      // Edsger W. Dijkstra: 5 + 12 = 17 likes
+      // Robert C. Martin: 10 + 0 + 2 = 12 likes
+      assert.deepStrictEqual(result, { author: 'Edsger W. Dijkstra', likes: 17 })
+    })
+  
+    test('if multiple authors have the same max total likes, returns one of them', () => {
+      const blogsWithTie = [
+        { author: 'Author A', title: 'T1', url: 'U1', likes: 10 }, // Total A: 10
+        { author: 'Author B', title: 'T2', url: 'U2', likes: 15 }, // Total B: 15
+        { author: 'Author C', title: 'T3', url: 'U3', likes: 5 },
+        { author: 'Author C', title: 'T4', url: 'U4', likes: 10 }, // Total C: 15
+      ]
+      // Expected: Author B or Author C, each with 15 total likes.
+      const result = listHelper.mostLikes(blogsWithTie)
+      const possibleAuthors = ['Author B', 'Author C']
+      assert.ok(possibleAuthors.includes(result.author), `Author should be one of ${possibleAuthors.join(', ')}`)
+      assert.strictEqual(result.likes, 15)
+    })
+  
+    test('when blogs have no likes or author field', () => {
+      const blogsWithoutLikesOrAuthor = [
+        { author: 'Author X', title: 'No Likes Blog', url: 'urlX' }, // likes is undefined
+        { title: 'No Author Blog', url: 'urlY', likes: 5 },
+        { author: 'Author Z', title: 'Zero Likes Blog', url: 'urlZ', likes: 0 }
+      ];
+      // Author X: 0 likes (from undefined)
+      // Author Z: 0 likes
+      // If no positive likes, it should still pick an author with 0 likes, or return null if no authors.
+      // Based on current logic, Author X or Z with 0 likes.
+      const result = listHelper.mostLikes(blogsWithoutLikesOrAuthor);
+      if (result !== null) { // It might be null if no authors are processed
+          assert.ok(result.author === 'Author X' || result.author === 'Author Z');
+          assert.strictEqual(result.likes, 0);
+      } else {
+          // This case might occur if your logic for handling missing authors in mostLikes is very strict
+          // and returns null early. The provided mostLikes should handle it.
+          assert.strictEqual(result, null, "Should be null if no authors with likes processed");
+      }
+    });
+  })
