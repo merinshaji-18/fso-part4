@@ -145,8 +145,58 @@ describe('when there are initially some blogs saved', () => {
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length, 'Blog count should not increase if URL is missing')
     })
   })
-  // ... (rest of the file, including the 'after' block)
-// Close the database connection after all tests have run
+  describe('addition of a new blog', () => {
+    test('succeeds with valid data', async () => {
+      // ... (existing test)
+      const newBlog = { title: 'A Brand New Blog Post', author: 'Test Author', url: 'http://example.com/newblog', likes: 15 }
+      await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+      const titles = blogsAtEnd.map(b => b.title)
+      assert(titles.includes('A Brand New Blog Post'))
+    })
+  
+    test('fails with status code 400 if title is missing', async () => {
+      // ... (existing test)
+      const newBlogWithoutTitle = { author: 'Anonymous', url: 'http://example.com/notitle', likes: 5 }
+      await api.post('/api/blogs').send(newBlogWithoutTitle).expect(400)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+  
+    test('fails with status code 400 if url is missing', async () => {
+      // ... (existing test)
+      const newBlogWithoutUrl = { title: 'A Blog With No URL', author: 'Anonymous', likes: 5 }
+      await api.post('/api/blogs').send(newBlogWithoutUrl).expect(400)
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+  
+    // New test for Exercise 4.11
+    test('if likes property is missing, it defaults to 0', async () => {
+      const newBlogWithoutLikes = {
+        title: 'Blog With No Likes Property',
+        author: 'Author Missing Likes',
+        url: 'http://example.com/nolikesprop'
+        // 'likes' property is intentionally omitted
+      }
+  
+      const response = await api
+        .post('/api/blogs')
+        .send(newBlogWithoutLikes)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+  
+      // Verify the 'likes' property of the returned blog object
+      assert.strictEqual(response.body.likes, 0, 'Likes should default to 0 in the response')
+  
+      // Optionally, verify in the database as well for robustness
+      const blogsAtEnd = await helper.blogsInDb()
+      const addedBlog = blogsAtEnd.find(blog => blog.title === 'Blog With No Likes Property')
+      assert.ok(addedBlog, 'The new blog should be found in the database')
+      assert.strictEqual(addedBlog.likes, 0, 'Likes should default to 0 in the database')
+    })
+  })
 after(async () => {
   await mongoose.connection.close()
 })
