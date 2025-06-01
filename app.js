@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
 const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users') 
 
 logger.info('connecting to', config.MONGODB_URI)
 
@@ -23,6 +24,7 @@ app.use(middleware.requestLogger) // Request logger middleware
 
 // Mount the blogs router
 app.use('/api/blogs', blogsRouter)
+app.use('/api/users', usersRouter)
 
 // Middleware for unknown endpoints (should be after routes)
 app.use(middleware.unknownEndpoint)
