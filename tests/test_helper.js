@@ -42,10 +42,16 @@ const usersInDb = async () => {
   const users = await User.find({})
   return users.map(u => u.toJSON())
 }
-
+const loginAndGetToken = async (api, username, password) => {
+  const response = await api
+    .post('/api/login')
+    .send({ username, password })
+  return response.body.token
+}
 module.exports = {
   initialBlogs,
   nonExistingId,
   blogsInDb,
-  usersInDb,
+  loginAndGetToken,
+  usersInDb
 }
