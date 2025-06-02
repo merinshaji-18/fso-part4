@@ -25,7 +25,7 @@ app.use(middleware.requestLogger) // Request logger middleware
 app.use(middleware.tokenExtractor)
 
 // Mount the blogs router
-app.use('/api/blogs', blogsRouter)
+app.use('/api/blogs',middleware.userExtractor, blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 // Middleware for unknown endpoints (should be after routes)

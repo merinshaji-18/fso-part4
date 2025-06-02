@@ -1,5 +1,7 @@
 // utils/middleware.js
 const logger = require('./logger')
+const jwt = require('jsonwebtoken'); // <<< --- THIS LINE IS CRUCIAL ---
+const User = require('../models/user'); // Already there for userExtractor
 
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method)
@@ -22,6 +24,33 @@ const tokenExtractor = (request, response, next) => {
   }
   next() // Pass control to the next middleware/route handler
 }
+// NEW MIDDLEWARE: userExtractor
+// utils/middleware.js
+const userExtractor = async (request, response, next) => {
+  const token = request.token;
+  console.log('--- userExtractor RUNNING ---');
+  console.log('userExtractor - request.token:', token);
+
+  if (token) {
+    try {
+      const decodedToken = jwt.verify(token, process.env.SECRET);
+      console.log('userExtractor - decodedToken:', decodedToken);
+      if (decodedToken && decodedToken.id) {
+        const user = await User.findById(decodedToken.id);
+        request.user = user; // Attach user
+        console.log('userExtractor - user attached:', user ? user.username : 'User not found in DB');
+      } else { request.user = null; console.log('userExtractor - no id in decoded token');}
+    } catch (error) {
+      request.user = null;
+      console.log('userExtractor - jwt.verify error:', error.name);
+    }
+  } else {
+    request.user = null;
+    console.log('userExtractor - no token provided');
+  }
+  console.log('--- userExtractor FINISHED, request.user is:', request.user ? request.user.username : request.user);
+  next();
+};
 const errorHandler = (error, request, response, next) => {
   logger.error(error.message)
 
@@ -51,6 +80,7 @@ const errorHandler = (error, request, response, next) => {
 module.exports = {
   requestLogger,    // <<< EXPORT IT
   unknownEndpoint,
-  tokenExtractor,  // <<< EXPORT IT
+  tokenExtractor,
+  userExtractor,  // <<< EXPORT IT
   errorHandler
 }
